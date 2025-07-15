@@ -1,41 +1,129 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Asisten Karantina AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 40px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #00796b;
+    }
+    #chat {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .bubble {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 10px;
+      max-width: 80%;
+      white-space: pre-wrap;
+    }
+    .user {
+      background-color: #e0f7fa;
+      margin-left: auto;
+      text-align: right;
+    }
+    .bot {
+      background-color: #e8f5e9;
+      margin-right: auto;
+    }
+    .row {
+      display: flex;
+    }
+    #inputRow {
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+  </style>
 </head>
 <body>
-  <h2>Asisten Karantina</h2>
-  <input id="inputText" type="text" placeholder="Tulis pertanyaan..." />
-  <button id="sendBtn">Kirim</button>
-  <pre id="output"></pre>
+  <div class="container">
+    <h2>Asisten Karantina AI</h2>
+    <div id="chat"></div>
+    <div id="inputRow">
+      <input type="text" id="input" placeholder="Tulis pertanyaan..." />
+      <button id="send">Kirim</button>
+    </div>
+  </div>
 
   <script>
-    const input = document.getElementById("inputText");
-    const output = document.getElementById("output");
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const send = document.getElementById('send');
 
-    document.getElementById("sendBtn").onclick = async () => {
-      const tanya = input.value.trim();
-      if (!tanya) return;
+    function addBubble(text, sender) {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble ' + sender;
+      bubble.textContent = text;
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.appendChild(bubble);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+    }
 
-      output.textContent = "Menghubungi webhook...";
+    send.onclick = async () => {
+      const question = input.value.trim();
+      if (!question) return;
+      addBubble(question, 'user');
+      input.value = '';
+      addBubble('Menjawab...', 'bot');
+      const allBubbles = document.getElementsByClassName('bot');
+      const current = allBubbles[allBubbles.length - 1];
 
       try {
         const res = await fetch("https://n8n-production-3ba7.up.railway.app/webhook/chatbot", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ chatInput: tanya })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatInput: question })
         });
 
         const text = await res.text();
-        output.textContent = text;
-      } catch (e) {
-        output.textContent = "ERROR: " + e.message;
-        console.error("Gagal fetch:", e);
+        current.textContent = text || "(Jawaban kosong)";
+      } catch (err) {
+        current.textContent = "Gagal menjawab. Silakan coba lagi.";
+        console.error("Fetch error:", err);
       }
     };
+
+    input.addEventListener("keydown", e => {
+      if (e.key === 'Enter') send.click();
+    });
   </script>
 </body>
 </html>
