@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asisten Layanan Karantina</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #00796b;
+      text-align: center;
+    }
+    #chatlog {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+    .bubble {
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+      width: fit-content;
+      max-width: 100%;
+    }
+    .user {
+      background-color: #e3f2fd;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .ai {
+      background-color: #dcedc8;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+    .chat-row {
+      display: flex;
+      flex-direction: row;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Asisten Layanan Karantina</h2>
+    <div id="chatlog"></div>
+    <div class="chat-row">
+      <input type="text" id="pertanyaan" placeholder="Tulis pertanyaan Anda..." />
+      <button id="kirim">Kirim</button>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById("pertanyaan");
+    const chatlog = document.getElementById("chatlog");
+    const kirimBtn = document.getElementById("kirim");
+
+    kirimBtn.onclick = async function () {
+      const pertanyaan = input.value.trim();
+      if (!pertanyaan) return;
+
+      // Tampilkan pertanyaan user
+      const userBubble = document.createElement("div");
+      userBubble.className = "bubble user";
+      userBubble.innerText = pertanyaan;
+      const row1 = document.createElement("div");
+      row1.className = "chat-row";
+      row1.appendChild(userBubble);
+      chatlog.appendChild(row1);
+      input.value = "";
+
+      // Bubble untuk respon
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "bubble ai";
+      aiBubble.innerText = "Sedang menjawab...";
+      const row2 = document.createElement("div");
+      row2.className = "chat-row";
+      row2.appendChild(aiBubble);
+      chatlog.appendChild(row2);
+      chatlog.scrollTop = chatlog.scrollHeight;
+
+      // Kirim ke n8n
+      try {
+        const response = await fetch("https://n8n.DOMAINKAMU.app/webhook/chatbot-groq", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chatInput: pertanyaan }),
+        });
+
+        const text = await response.text();
+        aiBubble.innerText = text;
+        chatlog.scrollTop = chatlog.scrollHeight;
+      } catch (error) {
+        aiBubble.innerText = "Gagal menjawab. Coba lagi nanti.";
+        console.error(error);
+      }
+    };
+
+    // Enter = kirim
+    input.addEventListener("keyup", function (event) {
+      if (event.key === "Enter") kirimBtn.click();
+    });
+  </script>
+</body>
+</html>
