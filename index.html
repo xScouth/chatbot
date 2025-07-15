@@ -34,7 +34,7 @@
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
     // PENTING: Ganti URL ini dengan URL Webhook Produksi dari n8n Anda!
-    const n8nWebhookUrl = 'URL_WEBHOOK_N8N_ANDA_DI_SINI';
+    const n8nWebhookUrl = 'https://n8n-production-3ba7.up.railway.app/webhook/chatbot';
 
     async function sendMessage() {
         const userMessageText = userInput.value.trim();
