@@ -1,49 +1,41 @@
-<script>
-  const sendBtn = document.getElementById("sendBtn");
-  const inputText = document.getElementById("inputText");
-  const messages = document.getElementById("messages");
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Asisten Karantina AI</title>
+</head>
+<body>
+  <h2>Asisten Karantina</h2>
+  <input id="inputText" type="text" placeholder="Tulis pertanyaan..." />
+  <button id="sendBtn">Kirim</button>
+  <pre id="output"></pre>
 
-  function addMessage(text, isUser) {
-    const div = document.createElement("div");
-    div.className = "bubble " + (isUser ? "user" : "bot");
-    div.textContent = text;
-    messages.appendChild(div);
-    messages.scrollTop = messages.scrollHeight;
-  }
+  <script>
+    const input = document.getElementById("inputText");
+    const output = document.getElementById("output");
 
-  sendBtn.onclick = async () => {
-    const question = inputText.value.trim();
-    if (!question) return;
+    document.getElementById("sendBtn").onclick = async () => {
+      const tanya = input.value.trim();
+      if (!tanya) return;
 
-    addMessage(question, true);
-    inputText.value = "";
+      output.textContent = "Menghubungi webhook...";
 
-    addMessage("Menjawab...", false);
-    const bubbles = document.getElementsByClassName("bot");
-    const current = bubbles[bubbles.length - 1];
+      try {
+        const res = await fetch("https://n8n-production-3ba7.up.railway.app/webhook/chatbot", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ chatInput: tanya })
+        });
 
-    try {
-      console.log("Mengirim ke webhook...");
-      const res = await fetch("https://n8n-production-3ba7.up.railway.app/webhook/chatbot", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ chatInput: question }),
-      });
-
-      console.log("Status:", res.status);
-      const text = await res.text();
-      console.log("Respons dari webhook:", text);
-
-      current.textContent = text || "(Tidak ada respons)";
-    } catch (err) {
-      current.textContent = "Gagal menjawab. Silakan coba lagi.";
-      console.error("Fetch error:", err);
-    }
-  };
-
-  inputText.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendBtn.click();
-  });
-</script>
+        const text = await res.text();
+        output.textContent = text;
+      } catch (e) {
+        output.textContent = "ERROR: " + e.message;
+        console.error("Gagal fetch:", e);
+      }
+    };
+  </script>
+</body>
+</html>
