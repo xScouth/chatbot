@@ -1,129 +1,262 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Asisten Karantina AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      padding: 40px;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background-color: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      margin-top: 0;
-      color: #00796b;
-    }
-    #chat {
-      max-height: 400px;
-      overflow-y: auto;
-      margin-bottom: 20px;
-    }
-    .bubble {
-      margin: 10px 0;
-      padding: 10px 15px;
-      border-radius: 10px;
-      max-width: 80%;
-      white-space: pre-wrap;
-    }
-    .user {
-      background-color: #e0f7fa;
-      margin-left: auto;
-      text-align: right;
-    }
-    .bot {
-      background-color: #e8f5e9;
-      margin-right: auto;
-    }
-    .row {
-      display: flex;
-    }
-    #inputRow {
-      display: flex;
-      gap: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    button {
-      padding: 10px 16px;
-      font-size: 16px;
-      background-color: #00796b;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #004d40;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot dengan Gemini AI</title>
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --background-color: #f5f5f5;
+            --user-bubble: #E3F2FD;
+            --bot-bubble: #E8F5E9;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: #333;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        #chat-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            height: 500px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        #user-input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        button {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3367D6;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            background-color: var(--user-bubble);
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+            color: #0d47a1;
+        }
+        
+        .bot-message {
+            background-color: var(--bot-bubble);
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            color: #1B5E20;
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--bot-bubble);
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666;
+            margin: 0 2px;
+            animation: typing-animation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing-animation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        .timestamp {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            #chat-container {
+                height: 400px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Asisten Karantina AI</h2>
-    <div id="chat"></div>
-    <div id="inputRow">
-      <input type="text" id="input" placeholder="Tulis pertanyaan..." />
-      <button id="send">Kirim</button>
+    <h1>Gemini AI Chatbot</h1>
+    <div id="chat-container"></div>
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Tanyakan sesuatu..." autocomplete="off">
+        <button id="send-button">Kirim</button>
     </div>
-  </div>
 
-  <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
-    const send = document.getElementById('send');
-
-    function addBubble(text, sender) {
-      const bubble = document.createElement('div');
-      bubble.className = 'bubble ' + sender;
-      bubble.textContent = text;
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.appendChild(bubble);
-      chat.appendChild(row);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    send.onclick = async () => {
-      const question = input.value.trim();
-      if (!question) return;
-      addBubble(question, 'user');
-      input.value = '';
-      addBubble('Menjawab...', 'bot');
-      const allBubbles = document.getElementsByClassName('bot');
-      const current = allBubbles[allBubbles.length - 1];
-
-      try {
-        const res = await fetch("https://n8n-production-3ba7.up.railway.app/webhook/chatbot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatInput: question })
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        
+        // Tambahkan pesan pembuka dari bot
+        window.onload = function() {
+            addMessage('bot', 'Halo! Saya adalah chatbot yang didukung oleh Google Gemini. Ada yang bisa saya bantu?');
+        };
+        
+        function addMessage(sender, message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            
+            // Format newlines menjadi <br>
+            const formattedMessage = message.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = formattedMessage;
+            
+            // Tambahkan timestamp
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('timestamp');
+            timeDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.appendChild(timeDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('message', 'bot-message', 'typing-indicator');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            addMessage('user', message);
+            userInput.value = '';
+            showTypingIndicator();
+            
+            try {
+                // Ganti URL dengan webhook n8n Anda
+                const response = await fetch('https://your-n8n-instance.com/webhook/gemini-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        question: message,
+                        // Jika menggunakan secret key
+                        // secret: "YOUR_SECRET_KEY" 
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                hideTypingIndicator();
+                addMessage('bot', data.response);
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('bot', 'Maaf, terjadi kesalahan: ' + error.message);
+                console.error('Error:', error);
+            }
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
         });
-
-        const text = await res.text();
-        current.textContent = text || "(Jawaban kosong)";
-      } catch (err) {
-        current.textContent = "Gagal menjawab. Silakan coba lagi.";
-        console.error("Fetch error:", err);
-      }
-    };
-
-    input.addEventListener("keydown", e => {
-      if (e.key === 'Enter') send.click();
-    });
-  </script>
+        
+        // Auto-focus input
+        userInput.focus();
+    </script>
 </body>
 </html>
