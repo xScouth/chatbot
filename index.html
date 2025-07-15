@@ -102,7 +102,7 @@
         const res = await fetch("https://n8n-production-3ba7.up.railway.app/webhook/chatbot", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chatInput: question })
+          body: JSON.stringify({ chatInput: chatInput })
         });
 
         const text = await res.text();
